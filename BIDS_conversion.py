@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Spyder Editor
+
+This is a temporary script file.
+"""
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -10,6 +17,8 @@ A short script that will convert to NIFTI.GZ (from raw DICOM data) and then crea
 import os   
 from nipype.interfaces.dcm2nii import Dcm2niix
 import shutil
+from glob import glob
+
 
 
 #%% Convert functions Converts DICOM to NIFTI.GZ
@@ -91,17 +100,17 @@ def organizeFiles(output_dir, subName, session):
     os.makedirs(fullPath + '/misc')    
     
     a = next(os.walk(fullPath)) # list the subfolders under subject name
-    dwi = False
+    #dwi = False
     # run through the possibilities and match directory with scan number (day)
     for n in a[2]:
         print (n)
         b = os.path.splitext(n)
         # add method to find (MB**) in filename and scrape it
-        if n.find('diff')!=-1:
-            print ('This file is DWI')
-            dwi = True
-            shutil.move((fullPath +'/' + n), fullPath + '/dwi/' + n)
-        elif n.find('MPRAGE')!=-1:
+        #if n.find('DKI')!=-1:
+        #    print ('This file is DWI')
+        #    dwi = True
+        #    shutil.move((fullPath +'/' + n), fullPath + '/dwi/' + n)
+        if n.find('MPRAGE')!=-1:
             print (n + ' Is Anat')
             shutil.move((fullPath + '/' + n), (fullPath + '/anat/' + n))
             os.rename(os.path.join(fullPath,'anat' , n), (fullPath + '/anat/' + subName+ '_' + session + '_acq-mprage_T1w' + checkGz(b)))
@@ -117,117 +126,50 @@ def organizeFiles(output_dir, subName, session):
             print (n + ' Is Anat')
             shutil.move((fullPath + '/' + n), (fullPath + '/anat/' + n))
             os.rename(os.path.join(fullPath,'anat' , n), (fullPath + '/anat/' + subName+ '_' + session + '_acq-gre_spoiled_T1w' + checkGz(b)))            
-        elif n.find('bold')!=-1:
+        elif n.find('fcMRI')!=-1:
             print(n  + ' Is functional')
             shutil.move((fullPath + '/' + n), (fullPath + '/func/' + n))
         else:
             print (n + 'Is MISC')
             shutil.move((fullPath + '/' + n), (fullPath + '/misc/' + n))
            
-    checkTask((fullPath + '/func/'), subName, session)
-    if dwi:
-        checkdwi((fullPath + '/dwi/'), subName, session)
+    #checkTask((fullPath + '/func/'), subName, session)
+    #if dwi:
+    #    checkdwi((fullPath + '/dwi/'), subName, session)
     
 # need to run thorugh misc folder and extract t1's when there is no MPRAGE - Need to solve issue with t1 - as adding the names is not validated with BIDS
 #%%
 # sessionDict = {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb9984_levy'}
 # subNumber = '10'
-def fullBids(subNumber, sessionDict):
-    output_dir = '/home/nachshon/Documents/Aging/BIDS/'
+def fullBids(subNumber, ses, sessionDict):
+    output_dir = '/home/levylab/Documents/Rest/BIDS/'
     subName = 'sub-' + subNumber
+    
+    sessionDict = {ses: sessionDict}
     
     for i in sessionDict:
         session = i
         source_dir = sessionDict[i]
-        print (session, source_dir)
-        fullPath = os.path.join(output_dir, subName, session)
-        print(fullPath)
+        #print (session, source_dir)
+        #fullPath = os.path.join(output_dir, subName, session)
+        #print(fullPath)
         convert(source_dir,  output_dir, subName, session)
         organizeFiles(output_dir, subName, session)        
         
     
     #print (v)
 #%%
-sublist = [
-           # {'subNumber': '10',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb9984_levy/'}},
-           # {'subNumber': '11',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb10007_levy/'}},
-           # {'subNumber': '13',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb10072_levy/'}},
-           # {'subNumber': '14',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb10114_levy/'}},
-           # {'subNumber': '15',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb10255_levy/'}},
-           # {'subNumber': '16',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb10297_levy/'}},
-           # {'subNumber': '17',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb10342_levy/'}},
-           # {'subNumber': '18',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb10383_levy/'}},
-           # {'subNumber': '19',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb10475_levy/'}},
-           # {'subNumber': '20',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb10520_levy/'}},
-           # {'subNumber': '23',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11288_levy/'}},
-           # {'subNumber': '24',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11123_levy/'}},
-           # {'subNumber': '25',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11019_levy/'}},
-           # {'subNumber': '26',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11228_levy/'}},
-           # {'subNumber': '27',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11316_levy/'}},
-           # {'subNumber': '30',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11386_levy/'}},
-           # {'subNumber': '32',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11495_levy/'}},
-           # {'subNumber': '36',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11656_levy/'}},
-           # {'subNumber': '37',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11539_levy/'}},
-           # {'subNumber': '38',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11678_levy/'}},
-           # {'subNumber': '39',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11638_levy/'}},
-           # {'subNumber': '40',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11617_levy/'}},
-           # {'subNumber': '41',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11698_levy/'}},
-           # {'subNumber': '42',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11711_levy/'}}
-           # {'subNumber': '43',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11734_levy/'}},
-           # {'subNumber': '44',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11743_levy/'}},
-           # {'subNumber': '46',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11769_levy/'}},
-           # {'subNumber': '50',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11800_levy/'}},
-           # {'subNumber': '51',
-           #  'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11837_levy/'}},
-           {'subNumber': '55',
-             'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/PB11875_levy/'}},
-           {'subNumber': '56',
-             'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/PB11903_levy/'}},
-           {'subNumber': '58',
-             'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/PB11912_levy/'}},
-           {'subNumber': '60',
-             'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11952_levy/'}},
-           {'subNumber': '57',
-             'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11961_levy/'}},
-           {'subNumber': '61',
-             'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11978_levy/'}},
-           {'subNumber': '62',
-             'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb11986_levy/'}},
-           {'subNumber': '64',
-             'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb12013_levy/'}},
-           {'subNumber': '66',
-             'sessionDict': {'ses-1': '/media/Data/Lab_Projects/Aging/neuroimaging/raw_dicom/pb12030_levy/'}},
-           
-           ]
+template = '/home/levylab/Documents/Rest/dicom/*/*_T1/MRI'
 
+sub_list = glob(template)
 
-for sub in sublist: 
-    fullBids(sub['subNumber'], sub['sessionDict'])
+subs = []
+
+for line in sub_list:
+    
+    sub = line.split('/')[6].split('_')[1]
+    subs.append(sub)
+
+for i in range(len(sub_list)): 
+    print(subs[i], sub_list[i])
+    fullBids(subs[i], 'ses-1', sub_list[i])
